@@ -1,0 +1,30 @@
+{"graph":{"name":"Bees App","template":""},
+ "nodes":[
+  {"id":"n8","name":"FlowerField","template":"<h2>flower field</h2>  <div>{{work}}</div>"},
+  {"id":"n7","name":"Bees","template":"<h2>Bees here</h2>   <input #input1 (keyup)=\"onChange($event, input1.value)\" [value]=\"colorOfFlower\" />   <button (click)=\"buzzReady()\">send color flower to be visited</button>"},
+  {"id":"n6","name":"App","templateUrl":"templates/app.html"}
+ ],
+ "edges":[
+  ["n6","n7","set","color","",0],
+  ["n7","n6","pub","buzz","",1],
+  ["n6","n8","set","work","",2]
+ ],
+ "views":[
+   {"name":"first","nodes":
+     {"n8":{"position":{"x":390,"y":173},"width":110},
+     "n7":{"position":{"x":214,"y":174},"width":60},
+     "n6":{"position":{"x":314,"y":76},"width":80}
+     },"edges":{}
+   },
+   {"name":"second view","nodes":{
+       "n8":{"position":{"x":429,"y":200}},
+       "n7":{"position":{"x":414,"y":108}},
+       "n6":{"position":{"x":205,"y":201}}},"edges":{}
+   },
+   {"name":"sideways","nodes":{
+      "n6":{"position":{"x":465,"y":122}},
+      "n7":{"position":{"x":177,"y":208}},
+      "n8":{"position":{"x":115,"y":118}}},"edges":{}
+   }
+ ]
+}

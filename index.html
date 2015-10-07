@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Graphlet IDE</title>
+        <style>
+        #graph_vis {
+            height: 400px;
+            width: 100%;
+            border: 1px solid #E4D9C6;
+            /*margin-left: 20px;*/
+        }
+        #graph_storage {
+            margin-left: 28px;
+        }
+        </style>
+        <!-- Bootstrap -->
+        <link href="bower_components/bootstrap/dist/css/bootstrap.css" rel="stylesheet" media="screen">
+
+        <script type="text/javascript" src="bower_components/jquery/dist/jquery.min.js"></script>
+        <script type="text/javascript" src="bower_components/jqueryui/jquery-ui.min.js"></script>
+        <script type="text/javascript" src="bower_components/cytoscape/dist/cytoscape.js"></script>
+        <script type="text/javascript" src="js/graphlet_vis.js"></script>
+        <script type="text/javascript" src="js/graphlet_storage.js"></script>
+        <script type="text/javascript" src="js/graphlet_examples.js"></script>
+		    <script type="text/javascript" src="js/graphlet_query.js"></script>
+        <script type="text/javascript" src="js/graphlet_procedural_run.js"></script>
+        <script type="text/javascript" src="js/transpiler/graphlet_to_state.js"></script>
+
+        <!--script type="text/javascript" src="js/json2html/json2html-0.4.1.js"></script -->
+        <!-- script type="text/javascript" src="js/json2html/jquery.json2html.js"></script -->
+        <script type="text/javascript" src="js/jsoneditor.js"></script>
+        <!-- Bootstrap -->
+        <script src="bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+        <script>
+		$(function() {
+			var args = document.location.search.slice(1).split('&');
+			var params = {};
+			$.each(args, function(i, o){
+			  var key_val_arr = o.split('=');
+			  if (key_val_arr.length === 2) {
+			    params[key_val_arr[0]] = decodeURIComponent(key_val_arr[1]);
+			  }
+			});
+
+			nodes_editor = new JSONEditor($('#node_editor')[0], {
+				  theme: 'bootstrap3',
+				  schema: {
+					"type": "array",
+					"title": "All Selected Nodes",
+					"uniqueItems": true,
+					"items": {
+					  "type": "object",
+					  "title": "Selected Node",
+					  "headerTemplate": "{{ self.id }} - {{ self.name }}",
+					  "properties": {
+						"name": {
+						  "type": "string",
+						  "default": "Start",
+              "required": true
+						},
+						"id": {
+						  "type": "string",
+						  "options": {"hidden": true}
+						},
+						"data": {
+						  "type": "object"
+						},
+						"io": {
+						  "type": "object",
+						  "properties": {
+							  "selector":{"type":"string"},
+							  "valve":{"type":"integer"},
+							  "as_type":{"type":"string"}
+						  }
+						},
+						"process": {
+						  "type": "array",
+						  "items": {"type":"string"}
+						},
+						"fsa": {
+						  "type": "object",
+						  "properties": {
+							  "states":{
+							    "type":"array",
+						      "items": {
+						        "type": "object",
+						        "properties": {
+						          "input":{"type":"string"},
+						          "node":{"type":"string"}
+						        }
+						      }
+							  },
+							  "description":{"type":"string"}
+						  }
+						},
+						"fsa_state": {
+					    "type":"object",
+						  "properties": {
+							  "accepting": {
+								  "type": "boolean"
+							  }
+						  }
+						},
+						"view": {
+						  "type":"object",
+						  "properties": {
+							  "position": {
+								  "type": "object",
+								  "properties": {"x":{"type":"integer"}, "y":{"type":"integer"}}
+							  }
+						  }
+						},
+						"parent": {
+						  "type": "string"
+						}
+					 },
+					 "format": "grid"
+					}
+				},
+				disable_array_add:false,
+				disable_array_delete:false,
+				disable_array_reorder:true,
+				disable_edit_json:true,
+				disable_properties:false
+			  });
+			edges_editor = new JSONEditor($('#edge_editor')[0], {
+				  theme: 'bootstrap3',
+				  schema: {
+					"type": "array",
+					"title": "Selected Edges",
+					"items": {
+					  "type": "object",
+					  "title": "Selected Edge",
+					  "headerTemplate": "{{ self.source }} -> {{ self.target }} ({{ self.edge_type }}) {{ self.name }} ",
+					  "properties": {
+              "name": {
+  						  "type": "string",
+	  					  "required": true
+		  				},
+  						"source": {
+  						  "type": "string",
+  						  "required": true
+  						},
+  						"target": {
+  						  "type": "string",
+  						  "required": true
+  						},
+  						"edge_type": {
+  						  "type": "string",
+  						  "enum": ["", "get", "set", "flo", "sub", "pub"],
+  						  "required": true
+  						},
+  						"guard": {
+  						  "type": "string",
+  						  "required": true
+  						},
+  						"set_op": {
+  						  "type": "string",
+  						  "enum":["", "push", "pop", "enqueue", "dequeue"]
+  						},
+  						"alias": {
+  						  "type": "string"
+  						}
+					  },
+					  "format": "grid"
+					}
+				},
+				disable_array_add:true,
+				disable_array_delete:true,
+				disable_array_reorder:true,
+				disable_edit_json:true,
+				disable_properties:true
+			});
+
+			if (params.example) {
+			  $(document).trigger("load_hbg", [{"graph":params.example, "view_index":0}, ["examples"]]);
+			}
+			else {
+			  $("#nav_load").trigger('click');
+			}
+		});
+        </script>
+    </head>
+<body>
+  <h1>Graphlet IDE</h1>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="well well-sm col-md-6">
+          <div id="graph_vis"></div>
+          <div class="row">
+              <div class="col-md-2" id="graph_storage"></div>
+              <div class="col-md-8" id="graph_title">No graph loaded ;P</div>
+          </div>
+          <div class="row">
+              <div class="col-md-12">
+
+                <div id="graph_view" class="input-group">
+                  <div class="input-group-addon">view</div>
+                  <select class="form-control"></select>
+                  <input class="form-control" style="display: none;"/>
+                  <span class="input-group-btn">
+                    <button id="rename_view" type="button" class="btn btn-default">rename</button>
+                    <button id="new_view" type="button" class="btn btn-default">new</button>
+                    <button id="delete_view" type="button" class="btn btn-default">delete</button>
+                  </span>
+                </div>
+              </div>
+          </div>
+          <div class="row">
+              <div class="col-md-12">
+                <button id="view_all" type="button" class="btn btn-default">Show All</button>
+                <button id="view_zoom_1" type="button" class="btn btn-default">Zoom 1.0</button>
+              </div>
+          </div>
+      </div>
+
+
+      <div class="col-md-6">
+        <div class="row">
+          <ul class="nav nav-tabs">
+            <li role="presentation" class="active"><a id="nav_load" href="#">Load</a></li>
+            <li role="presentation"><a id="nav_store" href="#">Store</a></li>
+            <li role="presentation"><a id="nav_edit" href="#">Edit</a></li>
+            <li role="presentation"><a id="nav_run" href="#">Run</a></li>
+          </ul>
+        </div>
+        <div id="edit_mode_ui" style="display: none;">
+            <div class="row"><div class="col-md-2"><button id="copy_node" type="button" class="btn btn-default">copy node</button>
+                                                   <button id="add_node" type="button" class="btn btn-default">add node</button></div>
+                             <div class="col-md-2"><button id="add_edge" type="button" class="btn btn-default" data-toggle="button">add edge</button></div>
+            </div>
+            <div class="row"><div class="col-md-2"><button id="delete_node" type="button" class="btn btn-default">delete node</button></div>
+                             <div class="col-md-2"><button id="delete_edge" type="button" class="btn btn-default">delete edge</button></div>
+            </div>
+            <div><h4 id="node_input_header">Node data (<span>0</span> Selected)</h4>
+                <div id="node_editor">
+                </div>
+            </div>
+            <div><h4 id="edge_input_header">Edge data (<span>0</span> Selected)</h4>
+                <div id="edge_editor">
+                </div>
+            </div>
+        </div>
+        <div id="run_mode_ui" style="display: none;">
+            <p><em>run</em> or <em>step through</em> this graph. You can direct the input and output (to and from) your graph below.</p>
+            <div id="graph_view" class="form-inline">
+            <div  class="form-group">
+              <div  class="input-group">
+                <div class="input-group-addon">step rate</div>
+                <input class="form-control" id="run_step_rate"  type="range" min="0" max="10000" value="0" />
+              <span class="input-group-addon"> </span>
+                <input class="form-control" id="run_step_rate_num" type="number" min="0" max="10" />
+                <div class="input-group-addon"> seconds per step</div>
+              </div>
+            </div>
+            </div>
+
+            <div id="graphlet">loading</div>
+            <div id="graphlet_step"></div>
+        </div>
+        <div id="export_mode_ui" style="display: none;">
+            <p>Export to a format that can be imported into another program or environment.</p>
+            <select>
+            	<option>Select an export format...</option>
+            	<option>angular-state-machine</option>
+            </select>
+        </div>
+        <div id="graph_out" style="display: none;">
+          <form class="form-horizontal">
+            <div class="control-group">
+              <label class="control-label" for="node_input_name_n2">Graph Name:
+              <div class="controls"><input id="graph_input_name_n2" type="text" data-provide="typeahead" data-items="" placeholder="Enter a Name">
+              <button id="save_to_storage" type="button" class="btn btn-primary">Save</button>
+              <button id="delete_from_storage" type="button" class="btn btn-primary">Delete</button>
+              </div>
+              </label>
+            </div>
+          </form>
+          <pre class="graphlet_src"></pre>
+          <form class="form-horizontal">
+            <div class="control-group">
+              <div class="controls">
+                    <button id="save_to_storage" type="button" class="btn btn-primary">Export</button>
+              </div>
+            </div>
+          </form>
+          <pre class="export"></pre>
+        </div>
+        <div id="graph_in" style="display: none;">
+          <form class="form-horizontal">
+            <div class="control-group">
+              <label class="control-label" for="node_input_name_n0">Example Graphs:
+              <div class="controls">
+                <select id="graph_input_name_n0">
+                  
+                </select>
+              </div>
+              </label>
+            </div>
+            <div class="control-group">
+              <label class="control-label" for="node_input_name_n1">Local Graph Source:
+              <div class="controls">
+                <select id="graph_input_name_n1">
+                  
+                </select>
+              </div>
+              </label>
+            </div>
+          </form>
+          <textarea>
+            
+          </textarea>
+          <button id="load_from_text" type="button" class="btn btn-primary">Load from Text</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,43 +1,32 @@
 import {Component, View, bootstrap, EventEmitter} from 'angular2/angular2';
 
-
-// graph editor aka bee's mind
+// mockup component
 @Component({
-  //injector: [GraphService],
-  events : ['newContent'],
-  properties: ['content'],
-  selector: 'bees-mind'
+  events : ['buzz'],
+  properties: ['colorOfFlower'],
+  selector: 'bees'
 })
 @View({
-  template: '<h2>Bee\'s mind</h2>\
-  <input #input1 (keyup)="onChange($event, input1.value)" [value]="content" />\
-  <button (click)="newContentReady()">send content to be worked on</button>\
+  template: '<h2>Bees here</h2>\
+  <input #input1 (keyup)="onChange($event, input1.value)" [value]="colorOfFlower" />\
+  <button (click)="buzzReady()">send colorOfFlower to be visited</button>\
   '
 })
-class BeesMind {
-  newContent: EventEmitter;
-  content:string = 'local content';
+class Bees {
+  buzz: EventEmitter;
+  colorOfFlower:string = 'prefered color of flower';
   constructor () {
     //>>this.graph = gs.graphel;
-    this.newContent = new EventEmitter();
+    this.buzz = new EventEmitter();
   }
-  newContentReady() {
+  buzzReady() {
     console.log("from the bottom");
-    this.newContent.next({content: this.content});
+    this.buzz.next({colorOfFlower: this.colorOfFlower});
   }
   onChange(e, new_value) {
-    this.content = new_value;
+    this.colorOfFlower = new_value;
   }
 }
-
-// a service that provides graph storage and other helpfull fileing and sweeping.
-class GraphService {
-  graphel: Object;
-  constructor() {
-    this.graphel = {graph:{}, nodes:[{id:'a'}, {id:'b'}], edges:[{from:'a', to:'b'}]};
-  }
-}
-
 
 // flowerfield
 @Component({
@@ -51,24 +40,24 @@ class GraphService {
   '
 })
 class FlowerField {
-  work:string = 'new flower';
+  work:string = 'many colored flowers';
 }
 
 @Component({
-  selector: 'bee-app'
+  selector: 'app'
 })
 @View({
-  directives: [BeesMind, FlowerField],
-  templateUrl: 'templates/bee-app.html'
+  directives: [Bees, FlowerField],
+  templateUrl: 'templates/app.html'
 })
-class BeeApp {
-  theWork: string = 'app level work for bee to do';
-  respondToNewContent(work) {
+class App {
+  theWork: string = 'an App level string';
+  respondTobuzz(work) {
     console.log("to the top");
-    console.log(work.content);
-    this.theWork = work.content;
+    console.log(work.colorOfFlower);
+    this.theWork = work.colorOfFlower;
   }
 }
 
 
-bootstrap(BeeApp);
+bootstrap(App);

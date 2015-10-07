@@ -4,7 +4,7 @@
       <meta charset="utf-8">
       <meta http-equiv="X-UA-Compatible" content="IE=edge">
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <title>Graphlet IDE</title>
+      <title>Angle-Iron an angular 2 diagram to code editor</title>
         <style>
         #graph_vis {
             height: 400px;
@@ -26,8 +26,7 @@
         <script type="text/javascript" src="js/graphlet_storage.js"></script>
         <script type="text/javascript" src="js/graphlet_examples.js"></script>
 		    <script type="text/javascript" src="js/graphlet_query.js"></script>
-        <script type="text/javascript" src="js/graphlet_procedural_run.js"></script>
-        <script type="text/javascript" src="js/transpiler/graphlet_to_state.js"></script>
+        <script type="text/javascript" src="js/compiler/graphlet_to_state.js"></script>
 
         <!--script type="text/javascript" src="js/json2html/json2html-0.4.1.js"></script -->
         <!-- script type="text/javascript" src="js/json2html/jquery.json2html.js"></script -->
@@ -186,7 +185,7 @@
         </script>
     </head>
 <body>
-  <h1>Graphlet IDE</h1>
+  <h1>Angle-Iron mockup</h1>
   <div class="container-fluid">
     <div class="row">
       <div class="well well-sm col-md-6">
@@ -225,7 +224,7 @@
             <li role="presentation" class="active"><a id="nav_load" href="#">Load</a></li>
             <li role="presentation"><a id="nav_store" href="#">Store</a></li>
             <li role="presentation"><a id="nav_edit" href="#">Edit</a></li>
-            <li role="presentation"><a id="nav_run" href="#">Run</a></li>
+            <li role="presentation"><a id="nav_run" href="#">Code</a></li>
           </ul>
         </div>
         <div id="edit_mode_ui" style="display: none;">
@@ -246,21 +245,73 @@
             </div>
         </div>
         <div id="run_mode_ui" style="display: none;">
-            <p><em>run</em> or <em>step through</em> this graph. You can direct the input and output (to and from) your graph below.</p>
-            <div id="graph_view" class="form-inline">
-            <div  class="form-group">
-              <div  class="input-group">
-                <div class="input-group-addon">step rate</div>
-                <input class="form-control" id="run_step_rate"  type="range" min="0" max="10000" value="0" />
-              <span class="input-group-addon"> </span>
-                <input class="form-control" id="run_step_rate_num" type="number" min="0" max="10" />
-                <div class="input-group-addon"> seconds per step</div>
-              </div>
-            </div>
-            </div>
+          <p>Generated Angular2 TypeScript</p>
+          <textarea id="angular2">
+import {Component, View, bootstrap, EventEmitter} from 'angular2/angular2';
 
-            <div id="graphlet">loading</div>
-            <div id="graphlet_step"></div>
+// Bees component
+@Component({
+  events : ['buzz'],
+  properties: ['color'],
+  selector: 'bees'
+})
+@View({
+  template: '<h2>Bees here</h2>\
+  <input #input1 (keyup)="onChange($event, input1.value)" [value]="color" />\
+  <button (click)="buzzReady()">send color to be visited</button>\
+  '
+})
+class Bees {
+  buzz: EventEmitter;
+  color:string = 'prefered color of flower';
+  constructor () {
+    this.buzz = new EventEmitter();
+  }
+  buzzReady() {
+    console.log("from the bottom");
+    this.buzz.next({color: this.color});
+  }
+  onChange(e, new_value) {
+    this.color = new_value;
+  }
+}
+
+// FlowerField component
+@Component({
+  properties: ['work'],
+  selector: 'flower-field'
+})
+@View({
+  template: '\
+    <h2>flower field</h2>\
+    <div>{{work}}</div>\
+  '
+})
+class FlowerField {
+  work:string = 'many colored flowers';
+}
+
+// App component
+@Component({
+  selector: 'app'
+})
+@View({
+  directives: [Bees, FlowerField],
+  templateUrl: 'templates/app.html'
+})
+class App {
+  theWork: string = 'an App level string';
+  respondTobuzz(work) {
+    console.log("to the top");
+    console.log(work.color);
+    this.theWork = work.color;
+  }
+}
+
+
+bootstrap(App);
+
+          </textarea>
         </div>
         <div id="export_mode_ui" style="display: none;">
             <p>Export to a format that can be imported into another program or environment.</p>
@@ -296,7 +347,7 @@
               <label class="control-label" for="node_input_name_n0">Example Graphs:
               <div class="controls">
                 <select id="graph_input_name_n0">
-                  
+
                 </select>
               </div>
               </label>
@@ -305,14 +356,14 @@
               <label class="control-label" for="node_input_name_n1">Local Graph Source:
               <div class="controls">
                 <select id="graph_input_name_n1">
-                  
+
                 </select>
               </div>
               </label>
             </div>
           </form>
           <textarea>
-            
+
           </textarea>
           <button id="load_from_text" type="button" class="btn btn-primary">Load from Text</button>
         </div>

@@ -1,2 +1,3 @@
-# graph-coaster
-graphing out apps and other serialized creations
+# component-graphs
+graphing component based creations, from every angle.
+
